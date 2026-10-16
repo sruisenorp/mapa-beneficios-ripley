@@ -692,7 +692,7 @@ svg.leaflet-image-layer.leaflet-interactive path {
   --display:"Sora",system-ui,sans-serif; --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
 }
 *{box-sizing:border-box}
-html,body{height:100%;margin:0}
+html,body{height:100%;margin:0;overflow-x:hidden;max-width:100vw}
 body{font-family:var(--body);color:var(--ink);background:var(--ground);font-size:14px;display:flex;flex-direction:column}
 button,select,input{font:inherit;color:inherit}
 header.top{background:var(--plum);color:#fff;padding:10px max(16px,env(safe-area-inset-left)) 10px max(16px,env(safe-area-inset-right));display:flex;align-items:center;gap:16px;flex-wrap:wrap}
@@ -864,8 +864,8 @@ function textOk(l){if(!st.q)return true;return st.q.split(/\s+/).every(w=>l.txt.
 function km(a,b){const R=6371,dLa=(b.lat-a.lat)*Math.PI/180,dLo=(b.lon-a.lon)*Math.PI/180;const x=Math.sin(dLa/2)**2+Math.cos(a.lat*Math.PI/180)*Math.cos(b.lat*Math.PI/180)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x))}
 // map
 const map=L.map('map',{zoomControl:true,preferCanvas:false}).setView([-33.44,-70.62],11);
-let tl=L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd',attribution:'&copy; OpenStreetMap &copy; CARTO'}).addTo(map);
-let tErr=0;tl.on('tileerror',()=>{if(++tErr===4){map.removeLayer(tl);tl=L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}).addTo(map);}});
+const TILES=[['https://tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'&copy; OpenStreetMap'}],['https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}',{maxZoom:19,attribution:'&copy; Esri, OpenStreetMap'}]];
+let ti=0,tErr=0,tl;function setTiles(){if(tl)map.removeLayer(tl);tl=L.tileLayer(TILES[ti][0],TILES[ti][1]).addTo(map);tErr=0;tl.on('tileerror',()=>{if(++tErr===4&&ti<TILES.length-1){ti++;setTiles();}});}setTiles();
 const cluster=L.markerClusterGroup({showCoverageOnHover:false,maxClusterRadius:55,iconCreateFunction:c=>{const n=c.getChildCount();const s=n<10?36:n<100?42:50;return L.divIcon({html:`<div>${n}</div>`,className:'cl',iconSize:[s,s]})}});
 map.addLayer(cluster);
 const markers={};
